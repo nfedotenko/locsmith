@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+samples/*.ru.csv
+samples/*.*.csv
+!samples/glossary.*.csv
+.DS_Store
+DEVTO_POST.md

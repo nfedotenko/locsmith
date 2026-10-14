@@ -1,0 +1,14 @@
+key,source,context,max_len
+ui.play,Play,Main menu button,12
+ui.settings,Settings,Main menu button,14
+ui.quit_confirm,Are you sure you want to quit?\nUnsaved progress will be lost.,Dialog body,
+hud.stamina_low,<color=#ff4040>Stamina low!</color>,HUD warning flash,24
+shop.buy,Buy for {price} Aether Shards,Shop button,28
+shop.not_enough,"You need {0} more Aether Shards.",Shop error toast,
+loot.picked,You picked up %d x %s,Loot feed line,
+quest.reward,[b]Reward:[/b] {xp} XP and {shards} Aether Shards,Quest log,
+npc.smith.greet,"Back again, Warden? The forge doesn't sleep, and neither do I.",Blacksmith NPC greeting; gruff but friendly,
+npc.smith.repair,Your blade is chipped. {cost} shards and I'll make it sing again.,Blacksmith offers repair,
+tutorial.dodge,Press {key_dodge} to dodge. Dodging costs stamina.,Tutorial popup,
+achv.first_blood,First Blood,Achievement title,20
+achv.first_blood.desc,Defeat your first Hollow.,Achievement description,
