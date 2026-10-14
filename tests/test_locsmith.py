@@ -43,6 +43,40 @@ class Parse(unittest.TestCase):
         self.assertEqual(L.parse_json_object("no json here"), {})
 
 
+class ModelIO(unittest.TestCase):
+    def _capture(self, **kw):
+        sent = {}
+
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def read(self): return json.dumps(
+                {"choices": [{"message": {"content": '{"k": "v"}'}}]}).encode()
+
+        def fake_urlopen(req, timeout=0):
+            sent["url"] = req.full_url
+            sent["body"] = json.loads(req.data)
+            sent["auth"] = req.headers.get("Authorization")
+            return Resp()
+
+        orig = L.urllib.request.urlopen
+        L.urllib.request.urlopen = fake_urlopen
+        try:
+            llm = L.make_llm("http://host/v1", "gemma4:12b", None, 0.2, 60, **kw)
+            self.assertEqual(L.parse_json_object(llm([{"role": "user", "content": "hi"}])), {"k": "v"})
+        finally:
+            L.urllib.request.urlopen = orig
+        return sent
+
+    def test_reasoning_effort_sent_when_set(self):
+        sent = self._capture(reasoning="none")
+        self.assertEqual(sent["url"], "http://host/v1/chat/completions")
+        self.assertEqual(sent["body"]["reasoning_effort"], "none")
+
+    def test_reasoning_effort_omitted_by_default(self):
+        self.assertNotIn("reasoning_effort", self._capture()["body"])
+
+
 class Pipeline(unittest.TestCase):
     def test_retry_fixes_broken_placeholder(self):
         calls = []

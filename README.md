@@ -14,6 +14,8 @@ then **validates every string** so the output is safe to drop into the build:
 
 Works with any OpenAI-compatible endpoint: Ollama, llama.cpp `llama-server`, vLLM, LM Studio. Standard library only.
 
+Gemma 4 and other reasoning models "think" before answering, which is wasted effort for structured translation. locsmith sends `reasoning_effort: none` by default, cutting a batch from thousands of tokens to a few hundred (~10x faster); raise it with `--reasoning low|medium|high` if you want the model to deliberate.
+
 ## Quick start
 
 ```bash

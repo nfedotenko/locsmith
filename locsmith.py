@@ -120,12 +120,17 @@ def validate(item: Item, target: str | None, glossary: list[GlossaryEntry]) -> l
 LLM = Callable[[list[dict]], str]
 
 
-def make_llm(base_url: str, model: str, api_key: str | None, temperature: float, timeout: int) -> LLM:
+def make_llm(base_url: str, model: str, api_key: str | None, temperature: float, timeout: int,
+             reasoning: str | None = None) -> LLM:
     url = base_url.rstrip("/") + "/chat/completions"
 
     def call(messages: list[dict]) -> str:
-        body = json.dumps({"model": model, "messages": messages,
-                           "temperature": temperature, "stream": False}).encode()
+        payload = {"model": model, "messages": messages, "temperature": temperature, "stream": False}
+        # Reasoning models (e.g. gemma4) otherwise spend hundreds of "thinking" tokens per batch.
+        # reasoning_effort is an OpenAI-standard field; servers that don't support it ignore it.
+        if reasoning:
+            payload["reasoning_effort"] = reasoning
+        body = json.dumps(payload).encode()
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -280,12 +285,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--retries", type=int, default=2)
     p.add_argument("--temperature", type=float, default=0.2)
     p.add_argument("--timeout", type=int, default=600)
+    p.add_argument("--reasoning", choices=["none", "low", "medium", "high"], default="none",
+                   help="reasoning_effort for thinking models (default: none; disables Gemma's "
+                        "thinking so a batch costs ~10x fewer tokens)")
     a = p.parse_args(argv)
 
     items = load_items(a.input)
     glossary = load_glossary(a.glossary)
     out = a.out or f"{os.path.splitext(a.input)[0]}.{a.to}.csv"
-    llm = make_llm(a.base_url, a.model, a.api_key, a.temperature, a.timeout)
+    llm = make_llm(a.base_url, a.model, a.api_key, a.temperature, a.timeout, a.reasoning)
 
     t0 = time.monotonic()
     results = translate(items, glossary, llm,
